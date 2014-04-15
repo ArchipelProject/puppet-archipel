@@ -37,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     puppet.manifests_path = "puppet/manifests"
   end
   config.vm.define :archipel_central_server, :primary => true do |archipel_central_server|
-    archipel_central_server.vm.hostname = "archipel-central-server"
+    archipel_central_server.vm.hostname = "archipel-central-server.archipel.priv"
     archipel_central_server.vm.provision :puppet do |puppet|
       puppet.manifest_file = "archipel-central-server.pp"
       puppet.manifests_path = "puppet/manifests"
@@ -45,7 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
   config.vm.define :archipel_hyp_1 do |archipel_hyp_1|
-    archipel_hyp_1.vm.hostname = "archipel-hyp-1"
+    archipel_hyp_1.vm.hostname = "archipel-hyp-1.archipel.priv"
     archipel_hyp_1.vm.provision :puppet do |puppet|
       puppet.manifest_file = "archipel-hypervisor.pp"
       puppet.manifests_path = "puppet/manifests"
@@ -53,7 +53,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
   config.vm.define :archipel_hyp_2 do |archipel_hyp_2|
-    archipel_hyp_2.vm.hostname = "archipel-hyp-2"
+    archipel_hyp_2.vm.hostname = "archipel-hyp-2.archipel.priv"
     archipel_hyp_2.vm.provision :puppet do |puppet|
       puppet.manifest_file = "archipel-hypervisor.pp"
       puppet.manifests_path = "puppet/manifests"

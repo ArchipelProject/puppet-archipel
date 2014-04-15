@@ -1,5 +1,10 @@
 class archipel::central_server{
-  include ejabberd
+  class { 'ejabberd':
+    config_source   => 'puppet:///files/ejabberd.cfg',
+    package_ensure  => 'installed',
+    package_name    => 'ejabberd',
+    service_reload  => true,
+  }
   ejabberd::contrib::module{ 'mod_xmlrpc': }
 
   ejabberd_user { 'admin':
