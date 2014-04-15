@@ -1,6 +1,15 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+VAGRANTFILE_API_VERSION = "2"
+
+require 'ipaddr'
+
+domain = 'archipel.priv'
+network = IPAddr.new '192.168.122.0/24'
+range = network.to_range.to_a
+cidr = (32-(Math.log(range.length)/Math.log(2))).to_i
+netmask = IPAddr.new('255.255.255.255').mask(cidr).to_s
 # figure out which hosts are getting provisioned
 provision = ARGV.select { |x| !x.start_with?('-') }
 if provision.length > 0 and ['up', 'provision'].include?(provision[0])
@@ -18,14 +27,13 @@ end
 projectdir = File.expand_path File.dirname(__FILE__)	# vagrant project dir!!
 
 
-VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "centos-6"
   config.vm.box_url = 'https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6/centos-6.box'
 
   config.vm.synced_folder ".", "/vagrant", type: "nfs"
-    # ensure the gluster module is present for provisioning...
+    # ensure the archipel module is present for provisioning...
     if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(puppet_hostname))
     cwd = `pwd`
     mod = File.join(projectdir, 'puppet', 'modules')
@@ -36,28 +44,37 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = "puppet/manifests"
   end
-  config.vm.define :archipel_central_server, :primary => true do |archipel_central_server|
-    archipel_central_server.vm.hostname = "archipel-central-server.archipel.priv"
-    archipel_central_server.vm.provision :puppet do |puppet|
+  central_server_hostname = "central-server"
+  config.vm.define :central_server, :primary => true do |central_server|
+    central_server.vm.hostname = "#{central_server_hostname}.#{domain}"
+    central_server.vm.network :private_network, :ip=> range[2].to_s,
+      :libvirt__netmask => netmask,
+      :libvirt__network_name => "default"
+    central_server.vm.provision :puppet do |puppet|
       puppet.manifest_file = "archipel-central-server.pp"
       puppet.manifests_path = "puppet/manifests"
       puppet.module_path = "puppet/modules"
     end
-  end
-  config.vm.define :archipel_hyp_1 do |archipel_hyp_1|
-    archipel_hyp_1.vm.hostname = "archipel-hyp-1.archipel.priv"
-    archipel_hyp_1.vm.provision :puppet do |puppet|
-      puppet.manifest_file = "archipel-hypervisor.pp"
-      puppet.manifests_path = "puppet/manifests"
-      puppet.module_path = "puppet/modules"
+    central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} ensure=present"
+    (1..2).each do |i|
+      central_server.vm.provision 'shell', inline: "puppet resource host agent-#{i}.#{domain} ip=#{range[2+i].to_s} ensure=present"
     end
   end
-  config.vm.define :archipel_hyp_2 do |archipel_hyp_2|
-    archipel_hyp_2.vm.hostname = "archipel-hyp-2.archipel.priv"
-    archipel_hyp_2.vm.provision :puppet do |puppet|
-      puppet.manifest_file = "archipel-hypervisor.pp"
-      puppet.manifests_path = "puppet/manifests"
-      puppet.module_path = "puppet/modules"
+  (1..2).each do |i|
+    config.vm.define "agent_#{i}" do |agent|
+      agent.vm.hostname = "agent-#{i}.#{domain}"
+      agent.vm.network :private_network, :ip=> range[2+i].to_s,
+        :libvirt__netmask => netmask,
+        :libvirt__network_name => "default"
+      agent.vm.provision :puppet do |puppet|
+        puppet.manifest_file = "archipel-hypervisor.pp"
+        puppet.manifests_path = "puppet/manifests"
+        puppet.module_path = "puppet/modules"
+      end
+      agent.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} ensure=present"
+      (1..2).each do |i|
+        agent.vm.provision 'shell', inline: "puppet resource host agent-#{i}.#{domain} ip=#{range[2+i].to_s} ensure=present"
+      end
     end
   end
 end
