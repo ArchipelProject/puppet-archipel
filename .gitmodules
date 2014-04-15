@@ -1,0 +1,9 @@
+[submodule "vagrant/archipel/puppet/modules/vcsrepo"]
+	path = vagrant/archipel/puppet/modules/vcsrepo
+	url = https://github.com/puppetlabs/puppetlabs-vcsrepo.git
+[submodule "vagrant/archipel/puppet/modules/epel"]
+	path = vagrant/archipel/puppet/modules/epel
+	url = https://github.com/stahnma/puppet-module-epel.git
+[submodule "vagrant/archipel/puppet/modules/ejabberd"]
+	path = vagrant/archipel/puppet/modules/ejabberd
+	url = https://github.com/lboynton/puppet-ejabberd.git

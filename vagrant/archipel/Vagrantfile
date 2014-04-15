@@ -1,0 +1,63 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# figure out which hosts are getting provisioned
+provision = ARGV.select { |x| !x.start_with?('-') }
+if provision.length > 0 and ['up', 'provision'].include?(provision[0])
+	provision.shift	# left over array provision should be list of hosts or []
+	if provision.length == 0
+		provision = true	# provision everything
+	end
+else
+	provision = false		# provision nothing
+end
+
+#
+#	ARGV parsing
+#
+projectdir = File.expand_path File.dirname(__FILE__)	# vagrant project dir!!
+
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "centos-6"
+  config.vm.box_url = 'https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6/centos-6.box'
+
+  config.vm.synced_folder ".", "/vagrant", type: "nfs"
+    # ensure the gluster module is present for provisioning...
+    if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(puppet_hostname))
+    cwd = `pwd`
+    mod = File.join(projectdir, 'puppet', 'modules')
+    `cd #{mod} && make archipel &> /dev/null; cd #{cwd}`
+  end
+
+
+  config.vm.provision :puppet do |puppet|
+    puppet.manifests_path = "puppet/manifests"
+  end
+  config.vm.define :archipel_central_server, :primary => true do |archipel_central_server|
+    archipel_central_server.vm.hostname = "archipel-central-server"
+    archipel_central_server.vm.provision :puppet do |puppet|
+      puppet.manifest_file = "archipel-central-server.pp"
+      puppet.manifests_path = "puppet/manifests"
+      puppet.module_path = "puppet/modules"
+    end
+  end
+  config.vm.define :archipel_hyp_1 do |archipel_hyp_1|
+    archipel_hyp_1.vm.hostname = "archipel-hyp-1"
+    archipel_hyp_1.vm.provision :puppet do |puppet|
+      puppet.manifest_file = "archipel-hypervisor.pp"
+      puppet.manifests_path = "puppet/manifests"
+      puppet.module_path = "puppet/modules"
+    end
+  end
+  config.vm.define :archipel_hyp_2 do |archipel_hyp_2|
+    archipel_hyp_2.vm.hostname = "archipel-hyp-2"
+    archipel_hyp_2.vm.provision :puppet do |puppet|
+      puppet.manifest_file = "archipel-hypervisor.pp"
+      puppet.manifests_path = "puppet/manifests"
+      puppet.module_path = "puppet/modules"
+    end
+  end
+end
