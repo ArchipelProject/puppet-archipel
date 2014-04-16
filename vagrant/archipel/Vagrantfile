@@ -32,9 +32,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "centos-6"
   config.vm.box_url = 'https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6/centos-6.box'
 
-  config.vm.synced_folder ".", "/vagrant", type: "nfs"
-    # ensure the archipel module is present for provisioning...
-    if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(puppet_hostname))
+  #config.vm.synced_folder ".", "/vagrant", type: "nfs"
+  # ensure the archipel module is present for provisioning...
+  if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(puppet_hostname))
     cwd = `pwd`
     mod = File.join(projectdir, 'puppet', 'modules')
     `cd #{mod} && make archipel &> /dev/null; cd #{cwd}`
