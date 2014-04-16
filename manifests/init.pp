@@ -15,4 +15,5 @@ class archipel{
   ->
   exec { "easy_install sqlalchemy":
     unless => "ls /usr/lib/python2.6/site-packages/SQLAlchemy-*"
+  }
 }
