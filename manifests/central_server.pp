@@ -27,10 +27,7 @@ class archipel::central_server{
     require => Class["archipel"]
   }
   ->
-  exec { "archipel-tagnode --jid=admin@${fqdn} --password=admin --create && \
-    archipel-rolesnode --jid=admin@${fqdn} --password=admin --create && \
-    archipel-adminaccounts --jid=admin@${fqdn} --password=admin --create && \
-    archipel-vmrequestnode --jid=admin@${fqdn} --password=admin --create": }
+  exec { "archipel-centralagentnode --jid=admin@${fqdn} --password=admin --create": }
   ->
   exec { "archipel-central-agent-initinstall -x ${fqdn}": }
 }
