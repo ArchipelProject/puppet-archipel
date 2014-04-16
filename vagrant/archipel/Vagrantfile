@@ -55,6 +55,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       puppet.manifests_path = "puppet/manifests"
       puppet.module_path = "puppet/modules"
     end
+    vm.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
+    vm.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname} ensure=absent"  # so that fqdn works
     central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} ensure=present"
     (1..2).each do |i|
       central_server.vm.provision 'shell', inline: "puppet resource host agent-#{i}.#{domain} ip=#{range[2+i].to_s} ensure=present"
@@ -71,6 +73,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         puppet.manifests_path = "puppet/manifests"
         puppet.module_path = "puppet/modules"
       end
+      vm.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
+      vm.vm.provision 'shell', inline: "puppet resource host agent-#{i} ensure=absent"  # so that fqdn works
       agent.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} ensure=present"
       (1..2).each do |i|
         agent.vm.provision 'shell', inline: "puppet resource host agent-#{i}.#{domain} ip=#{range[2+i].to_s} ensure=present"
