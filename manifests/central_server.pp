@@ -11,4 +11,21 @@ class archipel::central_server{
     host        => 'central-server.archipel.priv',
     password    => 'admin'
   }
+  Exec {
+  path => [
+    '/usr/local/bin',
+    '/opt/local/bin',
+    '/usr/bin',
+    '/usr/sbin',
+    '/bin',
+    '/sbin'],
+  logoutput => true,
+  }
+  exec { "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d":
+    unless => "ls /usr/lib/python2.6/site-packages/archipel-*"
+  }
+  ->
+  exec { "archipel-centralagentnode --jid=admin@$(hostname --fqdn) --password=admin --create": }
+  ->
+  exec { "archipel-central-agent-initinstall -x $(hostname --fqdn)": }
 }

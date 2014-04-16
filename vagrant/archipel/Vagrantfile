@@ -41,6 +41,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
 
+  # change permissions of ArchipelAgent folder so that we can install
+  cwd = `pwd`
+  archipel_dir = File.join(projectdir, 'Archipel'')
+  `cd #{archipel_dir} && chmod -R 777 ArchipelAgent &> /dev/null; cd #{cwd}`
+
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = "puppet/manifests"
   end
