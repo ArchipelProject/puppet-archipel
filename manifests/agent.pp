@@ -1,4 +1,4 @@
-archipel::agent{
+class archipel::agent{
   Exec {
   path => [
     '/usr/local/bin',
