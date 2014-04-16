@@ -7,3 +7,6 @@
 [submodule "vagrant/archipel/puppet/modules/ejabberd"]
 	path = vagrant/archipel/puppet/modules/ejabberd
 	url = https://github.com/lboynton/puppet-ejabberd.git
+[submodule "vagrant/archipel/Archipel"]
+	path = vagrant/archipel/Archipel
+	url = https://github.com/ArchipelProject/Archipel.git
