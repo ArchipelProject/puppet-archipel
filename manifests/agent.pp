@@ -1,5 +1,4 @@
 archipel::agent{
-  include archipel
   Exec {
   path => [
     '/usr/local/bin',

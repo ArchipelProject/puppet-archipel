@@ -7,10 +7,6 @@ class archipel::central_server{
   }
   ejabberd::contrib::module{ 'mod_xmlrpc': }
 
-  ejabberd_user { 'admin':
-    host        => 'central-server.archipel.priv',
-    password    => 'admin'
-  }
   Exec {
   path => [
     '/usr/local/bin',
@@ -22,6 +18,13 @@ class archipel::central_server{
   logoutput => true,
   }
   include archipel
+
+
+  ejabberd_user { 'admin':
+    host        => 'central-server.archipel.priv',
+    password    => 'admin'
+  }
+  ->
   exec { "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d":
     unless => "ls /usr/lib/python2.6/site-packages/archipel-*",
     require => Class["archipel"]
