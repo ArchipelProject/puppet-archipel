@@ -8,7 +8,7 @@ class archipel::central_server{
   ejabberd::contrib::module{ 'mod_xmlrpc': }
 
   ejabberd_user { 'admin':
-    host        => 'archipel_central_server.archipel.priv',
+    host        => 'central_server.archipel.priv',
     password    => 'admin'
   }
 }
