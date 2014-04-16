@@ -10,6 +10,7 @@ class archipel{
   logoutput => true,
   }
   package { ["python-xmpp","numpy", "python-setuptools", "gcc"]:
+    #gcc, python-devel, are for the native extensions of sqlalchemy installed below
     ensure => installed
   }
   ->
