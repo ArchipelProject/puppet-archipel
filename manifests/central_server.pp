@@ -25,7 +25,7 @@ class archipel::central_server{
     unless => "ls /usr/lib/python2.6/site-packages/archipel-*"
   }
   ->
-  exec { "archipel-centralagentnode --jid=admin@$(hostname --fqdn) --password=admin --create": }
+  exec { 'archipel-centralagentnode --jid=admin@#{::fqdn} --password=admin --create': }
   ->
-  exec { "archipel-central-agent-initinstall -x $(hostname --fqdn)": }
+  exec { "archipel-central-agent-initinstall -x #{::fqdn}": }
 }
