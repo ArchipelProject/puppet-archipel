@@ -16,7 +16,7 @@ archipel::agent{
     require => Class["archipel"]
   }
   ->
-  exec { "archipel-centralagentnode --jid=admin@#{::fqdn} --password=admin --create": }
+  exec { "archipel-centralagentnode --jid=admin@${fqdn} --password=admin --create": }
   ->
   exec { "archipel-initinstall": }
 }
