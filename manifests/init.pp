@@ -9,7 +9,7 @@ class archipel{
     '/sbin'],
   logoutput => true,
   }
-  package { ["python-xmpp","python-sqlalchemy", "numpy", "python-setuptools", "gcc"]:
+  package { ["python-xmpp","numpy", "python-setuptools", "gcc"]:
     ensure => installed
   }
   ->

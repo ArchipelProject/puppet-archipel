@@ -1,5 +1,4 @@
 class archipel::central_server{
-  include archipel
   class { 'ejabberd':
     config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
     package_ensure  => 'installed',
@@ -22,8 +21,10 @@ class archipel::central_server{
     '/sbin'],
   logoutput => true,
   }
+  include archipel
   exec { "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d":
-    unless => "ls /usr/lib/python2.6/site-packages/archipel-*"
+    unless => "ls /usr/lib/python2.6/site-packages/archipel-*",
+    require => Class["archipel"]
   }
   ->
   exec { 'archipel-centralagentnode --jid=admin@#{::fqdn} --password=admin --create': }
