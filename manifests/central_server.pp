@@ -1,4 +1,5 @@
 class archipel::central_server{
+  include archipel
   class { 'ejabberd':
     config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
     package_ensure  => 'installed',

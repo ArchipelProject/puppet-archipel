@@ -1,2 +1,3 @@
 archipel::agent{
+  include archipel
 }
