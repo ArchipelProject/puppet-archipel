@@ -29,15 +29,15 @@ class archipel::central_server{
     unless => "ls /usr/lib/python2.6/site-packages/archipel-*",
     require => Class["archipel"]
   }
-  exec { "archipel-tagnode --jid=admin@central_server.archipel.priv --password=admin --create":
+  exec { "archipel-tagnode --jid=admin@${fqdn} --password=admin --create":
     unless => "archipel-tagnode --jid=admin@central_server.archipel.priv --password=admin --list",
     require => Exec[ "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d"]
   }
-  exec { "archipel-rolesnode --jid=admin@central_server.archipel.priv --password=admin --create":
+  exec { "archipel-rolesnode --jid=admin@${fqdn} --password=admin --create":
     unless => "archipel-rolesnode --jid=admin@central_server.archipel.priv --password=admin --list",
     require => Exec[ "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d"]
   }
-  exec { "archipel-adminaccounts --jid=admin@central_server.archipel.priv --password=admin --create":
+  exec { "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --create":
     unless => "archipel-adminaccounts --jid=admin@central_server.archipel.priv --password=admin --list",
     require => Exec[ "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d"]
   }
