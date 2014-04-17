@@ -24,7 +24,7 @@ class archipel::agent{
     unless => "ls /usr/lib/python2.6/site-packages/SQLAlchemy-*"
   }
   ->
-  exec { "easy_install APScheduled":
+  exec { "easy_install APScheduler":
     unless => "ls /usr/lib/python2.6/site-packages/APScheduler-*"
   }
   ->
