@@ -10,7 +10,7 @@ class archipel::agent{
   logoutput => true,
   }
   include archipel
-  package { ["python-imaging","numpy"]:
+  package { ["python-imaging","numpy","libvirt","libvirt-python"]:
     #gcc, python-devel, are for the native extensions of sqlalchemy installed below
     ensure => present
   }
@@ -30,7 +30,7 @@ class archipel::agent{
   ->
   exec { "archipel-initinstall": }
   ->
-  service { "archipel-agent":
+  service { "archipel":
     ensure => "running"
   }
 }
