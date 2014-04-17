@@ -15,8 +15,17 @@ class archipel::agent{
     require => Class["archipel"]
   }
   ->
-  package { "python-imaging":
+  package { ["python-imaging","python-setuptools","gcc","python-devel","numpy"]:
+    #gcc, python-devel, are for the native extensions of sqlalchemy installed below
     ensure => present
+  }
+  ->
+  exec { "easy_install sqlalchemy":
+    unless => "ls /usr/lib/python2.6/site-packages/SQLAlchemy-*"
+  }
+  ->
+  exec { "easy_install APScheduled":
+    unless => "ls /usr/lib/python2.6/site-packages/APScheduler-*"
   }
   ->
   exec { "archipel-initinstall": }
