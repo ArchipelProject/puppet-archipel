@@ -35,20 +35,20 @@ class archipel::central_server{
   }
   ->
   exec { "archipel-tagnode --jid=admin@${fqdn} --password=admin --create":
-    unless => "archipel-tagnode --jid=admin@central_server.archipel.priv --password=admin --list",
+    unless => "archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
     require => Exec[ "easy_install sqlalchemy"]
   }
   exec { "archipel-rolesnode --jid=admin@${fqdn} --password=admin --create":
-    unless => "archipel-rolesnode --jid=admin@central_server.archipel.priv --password=admin --list",
+    unless => "archipel-rolesnode --jid=admin@${fqdn} --password=admin --list",
     require => Exec[ "easy_install sqlalchemy"]
   }
   exec { "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --create":
-    unless => "archipel-adminaccounts --jid=admin@central_server.archipel.priv --password=admin --list",
+    unless => "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --list",
     require => Exec[ "easy_install sqlalchemy"]
   }
   exec { "archipel-centralagentnode --jid=admin@${fqdn} --password=admin --create":
     # FIXME we have no idempotent way of checking that central agent node exists, so we check tagnode.
-    unless => "archipel-tagnode --jid=admin@central_server.archipel.priv --password=admin --list",
+    unless => "archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
     require => Exec[ "easy_install sqlalchemy"]
   }
   ->
