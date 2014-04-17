@@ -29,4 +29,8 @@ class archipel::agent{
   }
   ->
   exec { "archipel-initinstall": }
+  ->
+  service { "archipel-agent":
+    ensure => "running"
+  }
 }

@@ -53,4 +53,8 @@ class archipel::central_server{
   }
   ->
   exec { "archipel-central-agent-initinstall -x ${fqdn}": }
+  ->
+  service { "archipel-central-agent":
+    ensure => "running"
+  }
 }
