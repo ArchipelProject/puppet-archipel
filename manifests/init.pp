@@ -9,7 +9,7 @@ class archipel{
     '/sbin'],
   logoutput => true,
   }
-  package { "python-xmpp":
+  package { ["python-xmpp","python-setuptools"]:
     ensure => installed
   }
 }

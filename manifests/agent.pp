@@ -10,7 +10,7 @@ class archipel::agent{
   logoutput => true,
   }
   include archipel
-  package { ["python-imaging","python-setuptools","gcc","python-devel","numpy"]:
+  package { ["python-imaging","gcc","python-devel","numpy"]:
     #gcc, python-devel, are for the native extensions of sqlalchemy installed below
     ensure => present
   }
