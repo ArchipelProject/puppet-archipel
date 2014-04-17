@@ -10,14 +10,14 @@ class archipel::agent{
   logoutput => true,
   }
   include archipel
-  exec { "/vagrant/Archipel/ArchipelAgent/buildAgent -d":
-    unless => "ls /usr/lib/python2.6/site-packages/archipel-*",
-    require => Class["archipel"]
-  }
-  ->
   package { ["python-imaging","python-setuptools","gcc","python-devel","numpy"]:
     #gcc, python-devel, are for the native extensions of sqlalchemy installed below
     ensure => present
+  }
+  ->
+  exec { "/vagrant/Archipel/ArchipelAgent/buildAgent -d":
+    unless => "ls /usr/lib/python2.6/site-packages/archipel-*",
+    require => Class["archipel"]
   }
   ->
   exec { "easy_install sqlalchemy":
