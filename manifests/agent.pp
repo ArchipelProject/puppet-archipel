@@ -15,5 +15,9 @@ class archipel::agent{
     require => Class["archipel"]
   }
   ->
+  package { "python-imaging":
+    ensure => present
+  }
+  ->
   exec { "archipel-initinstall": }
 }
