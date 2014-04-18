@@ -33,8 +33,8 @@ class archipel::agent{
   }
   # edit configuration
   ->
-  exec { "sed -i 's/use_xmlrpc_api.*$/use_xmlrpc_api=True/' /etc/archipel/archipel.conf\
-    sed -i 's/centraldb =.*$/centraldb = True/' /etc/init.d/archipel.conf \
+  exec { "sed -i 's/use_xmlrpc_api.*$/use_xmlrpc_api=True/' /etc/archipel/archipel.conf &&\
+    sed -i 's/centraldb =.*$/centraldb = True/' /etc/init.d/archipel.conf && \
     sed -i 's/vmparking =.*$/vmparking = True/' /etc/init.d/archipel.conf":}
   ->
   service { "libvirtd":
