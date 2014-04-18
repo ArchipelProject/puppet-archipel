@@ -69,6 +69,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
   (1..2).each do |i|
     config.vm.define "agent_#{i}" do |agent|
+      agent.vm.provider :libvirt do |domain|
+        domain.nested = true
+      end
       agent.vm.hostname = "agent-#{i}.#{domain}"
       agent.vm.network :private_network, :ip=> range[2+i].to_s,
         :libvirt__netmask => netmask,
