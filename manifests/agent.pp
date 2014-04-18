@@ -28,7 +28,7 @@ class archipel::agent{
     unless => "ls /usr/lib/python2.6/site-packages/APScheduler-*"
   }
   ->
-  exec { "archipel-initinstall":
+  exec { "archipel-initinstall -x central-server.archipel.priv":
    unless => "ls /etc/init.d/archipel"
   }
   ->
