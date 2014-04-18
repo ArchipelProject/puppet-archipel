@@ -52,7 +52,9 @@ class archipel::central_server{
     require => Exec[ "easy_install sqlalchemy"]
   }
   ->
-  exec { "archipel-central-agent-initinstall -x ${fqdn}": }
+  exec { "archipel-central-agent-initinstall -x ${fqdn}":
+    unless => "ls /etc/init.d/archipel-central-agent"
+  }
   ->
   service { "archipel-central-agent":
     ensure => "running"
