@@ -10,7 +10,7 @@ class archipel::agent{
   logoutput => true,
   }
   include archipel
-  package { ["python-imaging","numpy","libvirt","libvirt-python","qemui-kvm"]:
+  package { ["python-imaging","numpy","libvirt","libvirt-python","qemu-kvm"]:
     #gcc, python-devel, are for the native extensions of sqlalchemy installed below
     ensure => present
   }
