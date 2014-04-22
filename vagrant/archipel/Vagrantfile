@@ -51,6 +51,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
   central_server_hostname = "central-server"
   config.vm.define :central_server, :primary => true do |central_server|
+    central_server.vm.provider :libvirt
     central_server.vm.hostname = "#{central_server_hostname}.#{domain}"
     central_server.vm.network :private_network, :ip=> range[2].to_s,
       :libvirt__netmask => netmask,
