@@ -5,7 +5,6 @@ class archipel::central_server{
     package_name    => 'ejabberd',
     service_reload  => true,
   }
-  ejabberd::contrib::module{ 'mod_xmlrpc': }
 
   Exec {
   path => [
