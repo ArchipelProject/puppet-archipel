@@ -6,6 +6,12 @@ class archipel::central_server{
     service_reload  => true,
   }
 
+  package { 'erlang-xmlrpc':
+    ensure => installed
+  }
+  ->
+  ejabberd::contrib::module{ 'mod_xmlrpc':  }
+
   Exec {
   path => [
     '/usr/local/bin',
