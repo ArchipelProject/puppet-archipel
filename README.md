@@ -29,3 +29,4 @@ git submodule update --recursive
 4. `cd vagrant/archipel`
 5. Bring up the environment with `vagrant up`
 6. Your Archipel hacking environment will be ready in minutes.
+7. Archipel source code is located in vagrant/archipel/Archipel. All modifications to the Archipel Agent code will be applied to all VMs. Have fun!
