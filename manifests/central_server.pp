@@ -1,17 +1,4 @@
 class archipel::central_server{
-  class { 'ejabberd':
-    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
-    package_ensure  => 'installed',
-    package_name    => 'ejabberd',
-    service_reload  => true,
-  }
-
-  package { 'erlang-xmlrpc':
-    ensure => installed
-  }
-  ->
-  ejabberd::contrib::module{ 'mod_xmlrpc':  }
-
   Exec {
   path => [
     '/usr/local/bin',
@@ -22,6 +9,42 @@ class archipel::central_server{
     '/sbin'],
   logoutput => true,
   }
+  class { 'ejabberd':
+    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
+    package_ensure  => 'installed',
+    package_name    => 'ejabberd',
+    service_reload  => true,
+  }
+
+  package { ['erlang-xmlrpc','git']:
+    ensure => installed
+  }
+  ->
+  vcsrepo { '/usr/local/src/ejabberd-modules':
+    ensure      => present,
+    provider    => svn,
+    source      => 'http://svn.process-one.net/ejabberd-modules/',
+  }
+  exec { "compile-ejabberd-xmlrpc":
+    cwd         => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/",
+    command     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/build.sh",
+    creates     => "/usr/local/src/ejabberd-modules/${name}/ebin/mod_xmlrpc.beam",
+    environment => 'HOME=/root',
+    logoutput   => true,
+  }
+  file { "${ejabberd::params::lib_dir}/ebin/ejabberd_xmlrpc.beam":
+    ensure  => present,
+    source  => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/ebin/ejabberd_xmlrpc.beam",
+    require => Exec["compile-ejabberd-xmlrpc"],
+  }
+
+
+  # we need deprecated ejabberd_xmlrpc. When we move to ejabberd 2.0,
+  # we can use mod_xmlrpc.
+  # since ejabberd_xmlrpc is not in the new git repository for modules,
+  # we cannot use the puppett-ejabberd module functionality.
+  #ejabberd::contrib::module{ 'mod_xmlrpc':  }
+
   include archipel
 
 
