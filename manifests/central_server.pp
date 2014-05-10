@@ -25,6 +25,7 @@ class archipel::central_server{
     provider    => svn,
     source      => 'http://svn.process-one.net/ejabberd-modules/',
   }
+  ->
   exec { "compile-ejabberd-xmlrpc":
     cwd         => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/",
     command     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/build.sh",
