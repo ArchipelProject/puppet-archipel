@@ -35,7 +35,7 @@ class archipel::central_server{
   }
   file { "${ejabberd::params::lib_dir}/ebin/ejabberd_xmlrpc.beam":
     ensure  => present,
-    source  => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/ebin/ejabberd_xmlrpc.beam",
+    source  => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/ebin/ejabberd_xmlrpc.beam",
     require => Exec["compile-ejabberd-xmlrpc"],
   }
 
