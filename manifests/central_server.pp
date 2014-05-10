@@ -85,6 +85,15 @@ class archipel::central_server{
     unless => "ls /etc/init.d/archipel-central-agent"
   }
   ->
+  # add the hyps the list of xmlrpc authorized users
+  exec { "archipel-ejabberdadmin admin@central-server.archipel.priv -p admin -a agent-1@central-server.archipel.priv":
+   unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep ${hostname}"
+  }
+  ->
+  exec { "archipel-ejabberdadmin admin@central-server.archipel.priv -p admin -a agent-2@central-server.archipel.priv":
+   unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep ${hostname}"
+  }
+  ->
   service { "archipel-central-agent":
     ensure => "running"
   }
