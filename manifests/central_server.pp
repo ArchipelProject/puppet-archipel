@@ -28,7 +28,7 @@ class archipel::central_server{
   exec { "compile-ejabberd-xmlrpc":
     cwd         => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/",
     command     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/build.sh",
-    creates     => "/usr/local/src/ejabberd-modules/${name}/ebin/mod_xmlrpc.beam",
+    creates     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/ebin/mod_xmlrpc.beam",
     environment => 'HOME=/root',
     logoutput   => true,
   }
