@@ -16,7 +16,7 @@ class archipel::central_server{
     service_reload  => true,
   }
 
-  package { ['erlang-xmlrpc']:
+  package { ['erlang-xmlrpc','svn']:
     ensure => installed
   }
   ->
