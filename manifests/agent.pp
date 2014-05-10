@@ -33,7 +33,7 @@ class archipel::agent{
   }
   ->
   # add to the list of xmlrpc authorized users
-  exec { "admin@central-server.archipel.priv -p admin -a ${hostname}@central-server.archipel.priv":
+  exec { "archipel-ejabberdadmin admin@central-server.archipel.priv -p admin -a ${hostname}@central-server.archipel.priv":
    unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep ${hostname}"
   }
   ->
