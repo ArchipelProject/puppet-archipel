@@ -31,8 +31,13 @@ class archipel::agent{
   exec { "archipel-initinstall -x central-server.archipel.priv":
    unless => "ls /etc/init.d/archipel"
   }
-  # edit configuration
   ->
+  # add to the list of xmlrpc authorized users
+  exec { "admin@central-server.archipel.priv -p admin -a ${hostname}@central-server.archipel.priv":
+   unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep ${hostname}"
+  }
+  ->
+  # edit configuration
   exec { "sed -i 's/use_xmlrpc_api.*$/use_xmlrpc_api=True/' /etc/archipel/archipel.conf &&\
     sed -i 's/auto_group *=.*$/auto_group = True/' /etc/archipel/archipel.conf && \
     sed -i 's/centraldb.*$/centraldb = True/' /etc/archipel/archipel.conf && \
