@@ -9,14 +9,7 @@ class archipel::central_server{
     '/sbin'],
   logoutput => true,
   }
-  class { 'ejabberd':
-    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
-    package_ensure  => 'installed',
-    package_name    => 'ejabberd',
-    service_reload  => true,
-  }
-
-  package { ['erlang-xmlrpc','subversion']:
+  package { ['erlang-xmlrpc','erlang-tools','erlang-xmerl','subversion']:
     ensure => installed
   }
   ->
@@ -33,10 +26,17 @@ class archipel::central_server{
     environment => 'HOME=/root',
     logoutput   => true,
   }
+  ->
+  class { 'ejabberd':
+    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
+    package_ensure  => 'installed',
+    package_name    => 'ejabberd',
+    service_reload  => true,
+  }
+  ->
   file { "${ejabberd::params::lib_dir}/ebin/ejabberd_xmlrpc.beam":
     ensure  => present,
     source  => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/ebin/ejabberd_xmlrpc.beam",
-    require => Exec["compile-ejabberd-xmlrpc"],
   }
 
 
