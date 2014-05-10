@@ -16,7 +16,7 @@ class archipel::central_server{
     service_reload  => true,
   }
 
-  package { ['erlang-xmlrpc','git']:
+  package { ['erlang-xmlrpc']:
     ensure => installed
   }
   ->
