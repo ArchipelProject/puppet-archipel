@@ -86,11 +86,11 @@ class archipel::central_server{
   }
   ->
   # add the hyps the list of xmlrpc authorized users
-  exec { "archipel-ejabberdadmin admin@central-server.archipel.priv -p admin -a agent-1@central-server.archipel.priv":
+  exec { "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -a agent-1@central-server.archipel.priv":
    unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep agent-1"
   }
   ->
-  exec { "archipel-ejabberdadmin admin@central-server.archipel.priv -p admin -a agent-2@central-server.archipel.priv":
+  exec { "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -a agent-2@central-server.archipel.priv":
    unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep agent-2"
   }
   ->
