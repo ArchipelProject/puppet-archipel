@@ -20,11 +20,11 @@ class archipel::agent{
     require => Class["archipel"]
   }
   ->
-  exec { "easy_install sqlalchemy":
+  exec { "pip install sqlalchemy":
     unless => "ls /usr/lib/python2.6/site-packages/SQLAlchemy-*"
   }
   ->
-  exec { "easy_install APScheduler":
+  exec { "pip install apscheduler==2.1.2":
     unless => "ls /usr/lib/python2.6/site-packages/APScheduler-*"
   }
   ->
@@ -33,13 +33,15 @@ class archipel::agent{
   }
   ->
   # edit configuration
-  exec { "sed -i 's/use_xmlrpc_api.*$/use_xmlrpc_api=True/' /etc/archipel/archipel.conf &&\
-    sed -i 's/auto_group *=.*$/auto_group = True/' /etc/archipel/archipel.conf && \
-    sed -i 's/centraldb.*$/centraldb = True/' /etc/archipel/archipel.conf && \
-    sed -i 's/vmparking.*$/vmparking = True/' /etc/archipel/archipel.conf":}
+  exec { "sed -i 's/vmparking.*$/vmparking = True/' /etc/archipel/modules.d/vmparking.conf": }
   ->
   service { "libvirtd":
     ensure => "running"
+  }
+  ->
+  # add the hyp the list of xmlrpc authorized users
+  exec { "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -a ${fqdn}@central-server.archipel.priv":
+   unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep ${fqdn}"
   }
   ->
   service { "archipel":

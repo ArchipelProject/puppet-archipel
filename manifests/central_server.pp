@@ -9,8 +9,18 @@ class archipel::central_server{
     '/sbin'],
   logoutput => true,
   }
+ 
+  class { 'ejabberd':
+    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
+    package_ensure  => 'installed',
+    package_name    => 'ejabberd',
+    service_reload  => true,
+  }
+
+
   package { ['erlang-xmlrpc','erlang-tools','erlang-xmerl','subversion']:
-    ensure => installed
+    ensure => present,
+    require => Package['ejabberd'],
   }
   ->
   vcsrepo { '/usr/local/src/ejabberd-modules':
@@ -25,13 +35,6 @@ class archipel::central_server{
     creates     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/ebin/mod_xmlrpc.beam",
     environment => 'HOME=/root',
     logoutput   => true,
-  }
-  ->
-  class { 'ejabberd':
-    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
-    package_ensure  => 'installed',
-    package_name    => 'ejabberd',
-    service_reload  => true,
   }
   ->
   file { "${ejabberd::params::lib_dir}/ebin/ejabberd_xmlrpc.beam":
@@ -59,39 +62,30 @@ class archipel::central_server{
     require => Class["archipel"]
   }
   ->
-  exec { "easy_install sqlalchemy":
+  exec { "pip install sqlalchemy":
     unless => "ls /usr/lib/python2.6/site-packages/SQLAlchemy-*"
   }
   ->
   exec { "archipel-tagnode --jid=admin@${fqdn} --password=admin --create":
     unless => "archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "easy_install sqlalchemy"]
+    require => Exec[ "pip install sqlalchemy"]
   }
   exec { "archipel-rolesnode --jid=admin@${fqdn} --password=admin --create":
     unless => "archipel-rolesnode --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "easy_install sqlalchemy"]
+    require => Exec[ "pip install sqlalchemy"]
   }
   exec { "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --create":
     unless => "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "easy_install sqlalchemy"]
+    require => Exec[ "pip install sqlalchemy"]
   }
   exec { "archipel-centralagentnode --jid=admin@${fqdn} --password=admin --create":
     # FIXME we have no idempotent way of checking that central agent node exists, so we check tagnode.
     unless => "archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "easy_install sqlalchemy"]
+    require => Exec[ "pip install sqlalchemy"]
   }
   ->
   exec { "archipel-central-agent-initinstall -x ${fqdn}":
     unless => "ls /etc/init.d/archipel-central-agent"
-  }
-  ->
-  # add the hyps the list of xmlrpc authorized users
-  exec { "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -a agent-1@central-server.archipel.priv":
-   unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep agent-1"
-  }
-  ->
-  exec { "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -a agent-2@central-server.archipel.priv":
-   unless => "archipel-ejabberdadmin -j admin@central-server.archipel.priv -p admin -l | grep agent-2"
   }
   ->
   service { "archipel-central-agent":

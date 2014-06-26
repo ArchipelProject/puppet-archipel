@@ -4,91 +4,142 @@
 VAGRANTFILE_API_VERSION = "2"
 
 require 'ipaddr'
+require 'yaml'
 
 domain = 'archipel.priv'
 network = IPAddr.new '192.168.122.0/24'
 range = network.to_range.to_a
 cidr = (32-(Math.log(range.length)/Math.log(2))).to_i
 netmask = IPAddr.new('255.255.255.255').mask(cidr).to_s
-# figure out which hosts are getting provisioned
-provision = ARGV.select { |x| !x.start_with?('-') }
-if provision.length > 0 and ['up', 'provision'].include?(provision[0])
-	provision.shift	# left over array provision should be list of hosts or []
-	if provision.length == 0
-		provision = true	# provision everything
-	end
-else
-	provision = false		# provision nothing
+count=2
+
+projectdir = File.expand_path File.dirname(__FILE__)	# vagrant project dir!!
+# we store the current settings into this file
+f = File.join(projectdir, 'puppet-archipel.yaml')
+
+# load settings
+if File.exist?(f)
+  settings = YAML::load_file f
+  count = settings[:count]
 end
 
 #
-#	ARGV parsing
+# ARGV parsing
 #
-projectdir = File.expand_path File.dirname(__FILE__)	# vagrant project dir!!
+skip = 0
+while skip < ARGV.length
+  #puts "#{skip}, #{ARGV[skip]}"  # debug
+  if ARGV[skip].start_with?(arg='--agent-count=')
+    v = ARGV.delete_at(skip).dup
+    v.slice! arg
+    #puts "#{arg}, #{v}"  # debug
+    count = v.to_i    # set agent host count
+  else  # skip over "official" vagrant args
+    skip = skip + 1
+  end
+end
 
+# save settings (ARGV overrides)
+settings = {
+  :count => count
+}
+File.open(f, 'w') do |file|
+  file.write settings.to_yaml
+end
+
+# figure out which hosts are getting provisioned
+provision = ARGV.select { |x| !x.start_with?('-') }
+if provision.length > 0 and ['up', 'provision'].include?(provision[0])
+  provision.shift # left over array provision should be list of hosts or []
+  if provision.length == 0
+    provision = true  # provision everything
+  end
+else
+  provision = false   # provision nothing
+end
 
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "centos-6"
-  config.vm.box_url = 'https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6/centos-6.box'
+  
+  config.vm.box = "nrel/CentOS-6.5-x86_64"
 
-  #config.vm.synced_folder ".", "/vagrant", type: "nfs"
-  if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(puppet_hostname))
-    # ensure the archipel module is present for provisioning...
-    cwd = `pwd`
-    mod = File.join(projectdir, 'puppet', 'modules')
-    `cd #{mod} && make archipel &> /dev/null; cd #{cwd}`
-    #
-    # change permissions of ArchipelAgent folder so that we can install
-    archipel_dir = File.join(projectdir, 'Archipel')
-    `cd #{archipel_dir} && chmod -R 777 ArchipelAgent &> /dev/null; cd #{cwd}`
+  config.vm.provider "libvirt" do |lv, override|
+    override.vm.box = "centos-6"
+    config.vm.box_url = 'https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6/centos-6.box'
   end
-
-
 
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = "puppet/manifests"
   end
+
   central_server_hostname = "central-server"
-  config.vm.define :central_server, :primary => true do |central_server|
+  
+  #config.vm.synced_folder ".", "/vagrant", type: "nfs"
+  if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(central_server_hostname))
+    # ensure the archipel module is present for provisioning...
+    mod = File.join(projectdir, 'puppet', 'modules')
+    `pushd #{mod} && make archipel &> /dev/null ; popd`
+    # change permissions of ArchipelAgent folder so that we can install
+    archipel_dir = File.join(projectdir, 'Archipel')
+    `pushd #{archipel_dir} && chmod -R 777 ArchipelAgent &> /dev/null; popd`
+  end
+
+  config.vm.define "central-server", :primary => true do |central_server|
     central_server.vm.provider :libvirt
     central_server.vm.hostname = "#{central_server_hostname}.#{domain}"
+    
     central_server.vm.network :private_network, :ip=> range[2].to_s,
       :libvirt__netmask => netmask,
       :libvirt__network_name => "default"
+
+    # Create hosts file for name resolution
+    central_server.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
+    central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname} ensure=absent"  # so that fqdn works
+    central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} host_aliases=#{central_server_hostname} ensure=present"
+    
+    (1..count).each do |i|
+      h = "agent-#{i}"
+      ip = range[2+i].to_s
+      central_server.vm.provision 'shell', inline: "puppet resource host #{h}.#{domain} ip=#{ip} host_aliases=#{h} ensure=present"
+    end
+  
     central_server.vm.provision :puppet do |puppet|
       puppet.manifest_file = "central_server.pp"
       puppet.manifests_path = "puppet/manifests"
       puppet.module_path = "puppet/modules"
     end
-    central_server.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
-    central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname} ensure=absent"  # so that fqdn works
-    central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} ensure=present"
-    (1..2).each do |i|
-      central_server.vm.provision 'shell', inline: "puppet resource host agent-#{i}.#{domain} ip=#{range[2+i].to_s} ensure=present"
-    end
+  
   end
-  (1..2).each do |i|
-    config.vm.define "agent_#{i}" do |agent|
+
+  (1..count).each do |i|
+    config.vm.define "agent-#{i}" do |agent|
+      
       agent.vm.provider :libvirt do |domain|
         domain.nested = true
         domain.cpu_mode = "custom"
       end
+      
       agent.vm.hostname = "agent-#{i}.#{domain}"
+      
       agent.vm.network :private_network, :ip=> range[2+i].to_s,
         :libvirt__netmask => netmask,
         :libvirt__network_name => "default"
+     
+      agent.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
+      agent.vm.provision 'shell', inline: "puppet resource host agent-#{i} ensure=absent"  # so that fqdn works
+      agent.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} host_aliases=#{central_server_hostname} ensure=present"
+      (1..count).each do |i|
+        h = "agent-#{i}"
+        ip = range[2+i].to_s
+        agent.vm.provision 'shell', inline: "puppet resource host #{h}.#{domain} ip=#{ip} host_aliases=#{h} ensure=present"
+      end
+
       agent.vm.provision :puppet do |puppet|
         puppet.manifest_file = "agent.pp"
         puppet.manifests_path = "puppet/manifests"
         puppet.module_path = "puppet/modules"
       end
-      agent.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
-      agent.vm.provision 'shell', inline: "puppet resource host agent-#{i} ensure=absent"  # so that fqdn works
-      agent.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} ensure=present"
-      (1..2).each do |i|
-        agent.vm.provision 'shell', inline: "puppet resource host agent-#{i}.#{domain} ip=#{range[2+i].to_s} ensure=present"
-      end
+      
     end
   end
 end

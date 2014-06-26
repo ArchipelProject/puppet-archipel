@@ -1,4 +1,5 @@
 class archipel{
+  include epel
   Exec {
   path => [
     '/usr/local/bin',
@@ -9,7 +10,20 @@ class archipel{
     '/sbin'],
   logoutput => true,
   }
-  package { ["python-xmpp","python-setuptools","gcc","python-devel"]:
+  package { ["git","python-setuptools","gcc","python-devel", "python-argparse", "python-pip"]:
     ensure => installed
+  }
+   ->
+  exec { "pip install git+git://github.com/normanr/xmpppy.git":
+  }
+  if $::operatingsystem == 'centos' {
+      service { 'iptables':
+        ensure => 'stopped',
+        enable => false,
+      }
+      service { 'ip6tables':
+        ensure => 'stopped',
+        enable => false,
+      }
   }
 }
