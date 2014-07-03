@@ -143,3 +143,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 end
+
+puts "After provisionning you can launch archipel UI http://app.archipelproject.org using admin@#{domain}, password admin and set server url as http://#{range[2].to_s}:5280/http-bind"
+
+
+
