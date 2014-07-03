@@ -10,12 +10,20 @@ class archipel{
     '/sbin'],
   logoutput => true,
   }
-  package { ["git","python-setuptools","gcc","python-devel", "python-argparse", "python-pip"]:
+  package { ["python-setuptools","gcc","python-devel", "python-argparse", "python-pip"]:
     ensure => installed
   }
-   ->
-  exec { "pip install git+git://github.com/normanr/xmpppy.git":
+
+  if ! defined(Package['git']) {
+      package { 'git':
+          ensure => installed,
+      }
   }
+    
+  exec { "pip install git+git://github.com/normanr/xmpppy.git":
+    require => Package["git"]
+  }
+
   if $::operatingsystem == 'centos' {
       service { 'iptables':
         ensure => 'stopped',

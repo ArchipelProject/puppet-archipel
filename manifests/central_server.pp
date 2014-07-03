@@ -48,10 +48,7 @@ class archipel::central_server{
   # since ejabberd_xmlrpc is not in the new git repository for modules,
   # we cannot use the puppett-ejabberd module functionality.
   #ejabberd::contrib::module{ 'mod_xmlrpc':  }
-
   include archipel
-
-
   ejabberd_user { 'admin':
     host        => 'central-server.archipel.priv',
     password    => 'admin'
