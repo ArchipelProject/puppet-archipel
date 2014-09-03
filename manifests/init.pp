@@ -22,12 +22,8 @@ class archipel( $include_pkg_repos = true ){
     if $include_pkg_repos == true {
       include epel
     }
-    #commented out because defaults has gcc
-    #package { ["python-setuptools","gcc","python-devel",
-    #           "python-argparse", "python-pip"]:
-    package { ["python-setuptools", "python-devel",
+    package { ["python-setuptools","gcc","python-devel",
                "python-argparse", "python-pip"]:
-      ensure => installed
     }
     service { 'iptables':
       ensure => 'stopped',
