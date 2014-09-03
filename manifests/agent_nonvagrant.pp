@@ -1,10 +1,12 @@
-requires 
+#requires 
 # - vcsrepo
 # - ejabberd 
 
 
 class archipel::agent_nonvagrant{
-  include archipel
+  if ! defined(Class['archipel']) {
+    include archipel
+  }
   Exec {
   path => [
     '/usr/local/bin',
