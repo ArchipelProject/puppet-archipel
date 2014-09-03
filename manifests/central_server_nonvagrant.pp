@@ -1,3 +1,13 @@
+#Sets up archipel-central-server for non-vagrant setups/persistant servers.
+
+#requires 
+# - vcsrepo
+# https://forge.puppetlabs.com/puppetlabs/vcsrepo
+# - ejabberd 
+# https://github.com/lboynton/puppet-ejabberd.git 
+# or
+# https://github.com/michael-leroy/puppet-ejabberd.git
+
 class archipel::central_server_nonvagrant{
   if ! defined(Class['archipel']) {
     include archipel
