@@ -1,4 +1,7 @@
 class archipel::central_server_nonvagrant{
+  if ! defined(Class['archipel']) {
+    include archipel
+  }
   Exec {
   path => [
     '/usr/local/bin',
@@ -48,7 +51,6 @@ class archipel::central_server_nonvagrant{
   # since ejabberd_xmlrpc is not in the new git repository for modules,
   # we cannot use the puppett-ejabberd module functionality.
   #ejabberd::contrib::module{ 'mod_xmlrpc':  }
-  include archipel
   ejabberd_user { 'admin':
     host        => $::fqdn,
     password    => 'admin',
