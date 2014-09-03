@@ -1,7 +1,12 @@
+#Sets up archipel agent for non-vagrant setups/persistant servers.
+
 #requires 
 # - vcsrepo
+# https://forge.puppetlabs.com/puppetlabs/vcsrepo
 # - ejabberd 
-
+# https://github.com/lboynton/puppet-ejabberd.git 
+# or
+# https://github.com/michael-leroy/puppet-ejabberd.git
 
 class archipel::agent_nonvagrant{
   if ! defined(Class['archipel']) {
