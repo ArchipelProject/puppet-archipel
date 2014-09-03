@@ -1,5 +1,7 @@
-class archipel{
-  #include epel
+class archipel( $include_epel = true ){
+  if $include_epel == true {
+    include epel
+  }
   Exec {
   path => [
     '/usr/local/bin',
