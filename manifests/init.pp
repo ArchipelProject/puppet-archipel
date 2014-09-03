@@ -1,7 +1,4 @@
-class archipel( $include_epel = true ){
-  if $include_epel == true {
-    include epel
-  }
+class archipel( $include_pkg_repos = true ){
   Exec {
   path => [
     '/usr/local/bin',
@@ -12,12 +9,7 @@ class archipel( $include_epel = true ){
     '/sbin'],
   logoutput => true,
   }
-  #commented out because defaults has gcc
-  #package { ["python-setuptools","gcc","python-devel", "python-argparse", "python-pip"]:
-  package { ["python-setuptools", "python-devel", "python-argparse", "python-pip"]:
-    ensure => installed
-  }
-
+  #assume git package is named 'git'
   if ! defined(Package['git']) {
     package { 'git':
       ensure => installed,
@@ -27,6 +19,16 @@ class archipel( $include_epel = true ){
     require => Package["git"]
   }
   if $::operatingsystem == 'centos' {
+    if $include_pkg_repos == true {
+      include epel
+    }
+    #commented out because defaults has gcc
+    #package { ["python-setuptools","gcc","python-devel",
+    #           "python-argparse", "python-pip"]:
+    package { ["python-setuptools", "python-devel",
+               "python-argparse", "python-pip"]:
+      ensure => installed
+    }
     service { 'iptables':
       ensure => 'stopped',
       enable => false,
