@@ -60,7 +60,7 @@ end
 
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  
+
   config.vm.box = "nrel/CentOS-6.5-x86_64"
 
   config.vm.provider "libvirt" do |lv, override|
@@ -73,21 +73,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   central_server_hostname = "central-server"
-  
+
   #config.vm.synced_folder ".", "/vagrant", type: "nfs"
   if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(central_server_hostname))
     # ensure the archipel module is present for provisioning...
     mod = File.join(projectdir, 'puppet', 'modules')
     `pushd #{mod} && make archipel &> /dev/null ; popd`
-    # change permissions of ArchipelAgent folder so that we can install
-    archipel_dir = File.join(projectdir, 'Archipel')
-    `pushd #{archipel_dir} && chmod -R 777 ArchipelAgent &> /dev/null; popd`
   end
 
   config.vm.define "central-server", :primary => true do |central_server|
     central_server.vm.provider :libvirt
     central_server.vm.hostname = "#{central_server_hostname}.#{domain}"
-    
+
     central_server.vm.network :private_network, :ip=> range[2].to_s,
       :libvirt__netmask => netmask,
       :libvirt__network_name => "default"
@@ -96,35 +93,35 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     central_server.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
     central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname} ensure=absent"  # so that fqdn works
     central_server.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} host_aliases=#{central_server_hostname} ensure=present"
-    
+
     (1..count).each do |i|
       h = "agent-#{i}"
       ip = range[2+i].to_s
       central_server.vm.provision 'shell', inline: "puppet resource host #{h}.#{domain} ip=#{ip} host_aliases=#{h} ensure=present"
     end
-  
+
     central_server.vm.provision :puppet do |puppet|
       puppet.manifest_file = "central_server.pp"
       puppet.manifests_path = "puppet/manifests"
       puppet.module_path = "puppet/modules"
     end
-  
+
   end
 
   (1..count).each do |i|
     config.vm.define "agent-#{i}" do |agent|
-      
+
       agent.vm.provider :libvirt do |domain|
         domain.nested = true
         domain.cpu_mode = "custom"
       end
-      
+
       agent.vm.hostname = "agent-#{i}.#{domain}"
-      
+
       agent.vm.network :private_network, :ip=> range[2+i].to_s,
         :libvirt__netmask => netmask,
         :libvirt__network_name => "default"
-     
+
       agent.vm.provision 'shell', inline: 'puppet resource host localhost.localdomain ip=127.0.0.1 host_aliases=localhost'
       agent.vm.provision 'shell', inline: "puppet resource host agent-#{i} ensure=absent"  # so that fqdn works
       agent.vm.provision 'shell', inline: "puppet resource host #{central_server_hostname}.#{domain} ip=#{range[2].to_s} host_aliases=#{central_server_hostname} ensure=present"
@@ -139,7 +136,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         puppet.manifests_path = "puppet/manifests"
         puppet.module_path = "puppet/modules"
       end
-      
+
     end
   end
 end

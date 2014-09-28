@@ -9,9 +9,9 @@ class archipel::central_server{
     '/sbin'],
   logoutput => true,
   }
- 
+
   class { 'ejabberd':
-    config_source   => 'puppet:///modules/archipel/ejabberd.cfg',
+    config_content  => template('archipel/ejabberd.cfg.erb'),
     package_ensure  => 'installed',
     package_name    => 'ejabberd',
     service_reload  => true,

@@ -15,9 +15,6 @@ class archipel( $include_pkg_repos = true ){
       ensure => installed,
     }
   }
-  exec { "pip install git+git://github.com/normanr/xmpppy.git":
-    require => Package["git"]
-  }
   if $::operatingsystem == 'centos' {
     if $include_pkg_repos == true {
       include epel
