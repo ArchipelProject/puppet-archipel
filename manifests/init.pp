@@ -1,5 +1,4 @@
-class archipel{
-  include epel
+class archipel( $include_pkg_repos = true ){
   Exec {
   path => [
     '/usr/local/bin',
@@ -10,28 +9,29 @@ class archipel{
     '/sbin'],
   logoutput => true,
   }
-  package { ["python-setuptools","gcc","python-devel", "python-argparse", "python-pip"]:
-    ensure => installed
-  }
-
+  #assume git package is named 'git'
   if ! defined(Package['git']) {
-      package { 'git':
-          ensure => installed,
-      }
+    package { 'git':
+      ensure => installed,
+    }
   }
-    
   exec { "pip install git+git://github.com/normanr/xmpppy.git":
     require => Package["git"]
   }
-
   if $::operatingsystem == 'centos' {
-      service { 'iptables':
-        ensure => 'stopped',
-        enable => false,
-      }
-      service { 'ip6tables':
-        ensure => 'stopped',
-        enable => false,
-      }
+    if $include_pkg_repos == true {
+      include epel
+    }
+    package { ["python-setuptools","gcc","python-devel",
+               "python-argparse", "python-pip"]:
+    }
+    service { 'iptables':
+      ensure => 'stopped',
+      enable => false,
+    }
+    service { 'ip6tables':
+      ensure => 'stopped',
+      enable => false,
+    }
   }
 }
