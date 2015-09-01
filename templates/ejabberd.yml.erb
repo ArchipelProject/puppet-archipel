@@ -1,0 +1,188 @@
+###
+###             ejabberd configuration file
+###         Archipel Sample default condiguration
+
+###     =========
+###     DEBUGGING
+
+# Increase this if you want sone insane erlang debug
+loglevel: 3
+
+###     ================
+###     SERVED HOSTNAMES
+
+# Change it for you FQDN
+hosts:
+    - "<%= @fqdn %>"
+
+###     ===============
+###     LISTENING PORTS
+
+listen:
+    -
+      #it's a good idea to put xmlrpc behing a reverse proxy
+      #because you can't use tls directly, make it listen to localhost
+      #ip : 127.0.0.1
+      # and read the Security section on the wiki
+      port: 4560
+      module: ejabberd_xmlrpc
+      access_commands:
+            xmlrpcaccess:
+                all : []
+
+## ejabberd c2s
+    -
+      port: 5222
+      module: ejabberd_c2s
+      ##
+      ## If you installed a SSL
+      ## certificate, specify the full path to the
+      ## file and uncomment this line:
+      ##
+      ## certfile: "/etc/ejabberd/ejabberd.pem"
+      ## starttls: true
+      max_stanza_size: 65536000
+      shaper: c2s_shaper
+      access: c2s
+
+## ejabbed s2s
+    -
+      port: 5269
+      module: ejabberd_s2s_in
+      max_stanza_size: 65536000
+
+## ejabberd http/s and websocket/s
+    -
+      port: 5280
+      module: ejabberd_http
+      request_handlers:
+        "/xmpp": ejabberd_http_ws
+      # if you want to use starttls with websock
+      # the URI will be wss://
+      # please be sure that the certificate belong
+      # to a trusted AC in your browser
+      # certfile: "/etc/ejabberd/ejabberd.pem"
+      # tls: true
+      web_admin: true
+      http_bind: true
+
+###     ===
+###     S2S
+s2s_policy: s2s_access
+s2s_use_starttls: optional
+#s2s_certfile: "/etc/ejabberd/ejabberd.pem"
+
+## domain_certfile: Specify a different certificate for each served hostname.
+##
+## host_config:
+##   "example.org":
+##     domain_certfile: "/path/to/example_org.pem"
+##   "example.com":
+##     domain_certfile: "/path/to/example_com.pem"
+
+###     ==============
+###     AUTHENTICATION
+
+auth_method: internal
+
+###     ===============
+###     TRAFFIC SHAPERS
+
+shaper:
+  # in B/s
+  normal: 1000
+  fast: 50000000
+
+###     ====================
+###     ACCESS CONTROL LISTS
+
+acl:
+    admin:
+        user:
+            - "admin": "<%= @fqdn %>"
+    local:
+        user_regexp: ""
+
+
+###     ============
+###     ACCESS RULES
+
+access:
+    max_user_sessions:
+        all: 10
+    local:
+        local: allow
+    c2s:
+        blocked: deny
+        all: allow
+    c2s_shaper:
+        admin: none
+        all: fast
+    s2s_shaper:
+        all: fast
+    s2s_access:
+        all: allow
+    announce:
+        admin: allow
+    configure:
+        admin: allow
+    muc_admin:
+        admin: allow
+    muc_create:
+        local: allow
+    muc:
+        all: allow
+    pubsub_createnode:
+        all: allow
+    register:
+        all: allow
+    xmlrpcaccess:
+        admin : allow
+
+### Frequency of account registration
+registration_timeout: infinity
+
+###     ================
+###     DEFAULT LANGUAGE
+
+language: "en"
+
+###     =======
+###     MODULES
+
+modules:
+    mod_adhoc: []
+    mod_announce:
+        access: announce
+    mod_caps: []
+    mod_configure: []
+    mod_disco: []
+    mod_http_bind:
+        max_inactivity: 400 # timeout valie for BOSH usefull for a large number of VM
+    mod_irc: []
+    mod_last: []
+    mod_muc:
+        access: muc
+        access_create: muc_create
+        access_persistent: muc_create
+        access_admin: muc_admin
+    mod_offline: []
+    mod_privacy: []
+    mod_private: []
+    mod_pubsub:
+        access_createnode: pubsub_createnode
+        ignore_pep_from_offline: true
+        last_item_cache: false
+        max_items_node: 1000
+        plugins:
+            - "flat"
+            - "hometree"
+            - "pep"
+    mod_register:
+        access: register
+    mod_roster: []
+    mod_shared_roster: []
+    mod_time: []
+    mod_vcard: []
+    mod_version: []
+    mod_admin_extra: []

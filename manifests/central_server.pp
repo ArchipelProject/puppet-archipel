@@ -1,91 +1,50 @@
-class archipel::central_server{
-  Exec {
-  path => [
-    '/usr/local/bin',
-    '/opt/local/bin',
-    '/usr/bin',
-    '/usr/sbin',
-    '/bin',
-    '/sbin'],
-  logoutput => true,
-  }
-
-  class { 'ejabberd':
-    config_content  => template('archipel/ejabberd.cfg.erb'),
-    package_ensure  => 'installed',
-    package_name    => 'ejabberd',
-    service_reload  => true,
-  }
-
-
-  package { ['erlang-xmlrpc','erlang-tools','erlang-xmerl','subversion']:
-    ensure => present,
-    require => Package['ejabberd'],
-  }
-  ->
-  vcsrepo { '/usr/local/src/ejabberd-modules':
-    ensure      => present,
-    provider    => svn,
-    source      => 'http://svn.process-one.net/ejabberd-modules/',
-  }
-  ->
-  exec { "compile-ejabberd-xmlrpc":
-    cwd         => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/",
-    command     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/build.sh",
-    creates     => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/ebin/mod_xmlrpc.beam",
-    environment => 'HOME=/root',
-    logoutput   => true,
-  }
-  ->
-  file { "${ejabberd::params::lib_dir}/ebin/ejabberd_xmlrpc.beam":
-    ensure  => present,
-    source  => "/usr/local/src/ejabberd-modules/ejabberd_xmlrpc/trunk/ebin/ejabberd_xmlrpc.beam",
-  }
-
-
-  # we need deprecated ejabberd_xmlrpc. When we move to ejabberd 2.0,
-  # we can use mod_xmlrpc.
-  # since ejabberd_xmlrpc is not in the new git repository for modules,
-  # we cannot use the puppett-ejabberd module functionality.
-  #ejabberd::contrib::module{ 'mod_xmlrpc':  }
+class archipel::central_server
+{
   include archipel
-  ejabberd_user { 'admin':
-    host        => 'central-server.archipel.priv',
-    password    => 'admin'
-  }
-  ->
+  include ejabberd
+
   exec { "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d":
-    unless => "ls /usr/lib/python2.6/site-packages/archipel-*",
+    unless => "/bin/ls /usr/lib/python2.7/site-packages/archipel-*",
     require => Class["archipel"]
   }
-  ->
-  exec { "pip install sqlalchemy":
-    unless => "ls /usr/lib/python2.6/site-packages/SQLAlchemy-*"
+
+  exec { "/usr/bin/archipel-tagnode --jid=admin@${fqdn} --password=admin --create":
+    unless => "/usr/bin/archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
+    require => [Exec['/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d'], Class["ejabberd"]]
   }
   ->
-  exec { "archipel-tagnode --jid=admin@${fqdn} --password=admin --create":
-    unless => "archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "pip install sqlalchemy"]
-  }
-  exec { "archipel-rolesnode --jid=admin@${fqdn} --password=admin --create":
-    unless => "archipel-rolesnode --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "pip install sqlalchemy"]
-  }
-  exec { "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --create":
-    unless => "archipel-adminaccounts --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "pip install sqlalchemy"]
-  }
-  exec { "archipel-centralagentnode --jid=admin@${fqdn} --password=admin --create":
-    # FIXME we have no idempotent way of checking that central agent node exists, so we check tagnode.
-    unless => "archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
-    require => Exec[ "pip install sqlalchemy"]
+  exec { "/usr/bin/archipel-rolesnode --jid=admin@${fqdn} --password=admin --create":
+    unless => "/usr/bin/archipel-rolesnode --jid=admin@${fqdn} --password=admin --list",
   }
   ->
-  exec { "archipel-central-agent-initinstall -x ${fqdn}":
-    unless => "ls /etc/init.d/archipel-central-agent"
+  exec { "/usr/bin/archipel-adminaccounts --jid=admin@${fqdn} --password=admin --create":
+    unless => "/usr/bin/archipel-adminaccounts --jid=admin@${fqdn} --password=admin --list",
+  }
+  ->
+  exec { "/usr/bin/archipel-centralagentnode --jid=admin@${fqdn} --password=admin --create":}
+  ->
+  exec { "/usr/bin/archipel-central-agent-initinstall -x ${fqdn}":
+    unless => "/bin/ls /etc/init.d/archipel-central-agent"
   }
   ->
   service { "archipel-central-agent":
     ensure => "running"
   }
+
+  package { 'httpd':
+    ensure => installed,
+  }
+
+  service { 'httpd':
+    enable      => true,
+    ensure      => running,
+    require    => Package['httpd'],
+  }
+
+exec { 'deploy_ui':
+  command      => '/usr/bin/curl http://nightlies.archipelproject.org/latest-archipel-client.tar.gz | tar xz -C /var/www/html/',
+  unless => "/bin/ls /var/www/html/Archipel",
+  require => Package['httpd']
+}
+
 }
