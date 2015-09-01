@@ -1,16 +1,19 @@
 class archipel::central_server
+(
+  $archipel_src_path="/vagrant"
+)
 {
   include archipel
   include ejabberd
 
-  exec { "/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d":
+  exec { "${archipel_src_path}/Archipel/ArchipelAgent/buildCentralAgent -d":
     unless => "/bin/ls /usr/lib/python2.7/site-packages/archipel-*",
     require => Class["archipel"]
   }
 
   exec { "/usr/bin/archipel-tagnode --jid=admin@${fqdn} --password=admin --create":
     unless => "/usr/bin/archipel-tagnode --jid=admin@${fqdn} --password=admin --list",
-    require => [Exec['/vagrant/Archipel/ArchipelAgent/buildCentralAgent -d'], Class["ejabberd"]]
+    require => [Exec["${archipel_src_path}/Archipel/ArchipelAgent/buildCentralAgent -d"], Class["ejabberd"]]
   }
   ->
   exec { "/usr/bin/archipel-rolesnode --jid=admin@${fqdn} --password=admin --create":

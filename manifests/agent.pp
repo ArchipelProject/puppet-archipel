@@ -1,4 +1,7 @@
 class archipel::agent
+(
+  $archipel_src_path="/vagrant"
+)
 {
 
   include archipel
@@ -7,7 +10,7 @@ class archipel::agent
     ensure => present
   }
   ->
-  exec { "/vagrant/Archipel/ArchipelAgent/buildAgent -d":
+  exec { "${archipel_src_path}/Archipel/ArchipelAgent/buildAgent -d":
     unless => "/bin/ls /usr/lib/python2.7/site-packages/archipel-*",
     require => Class["archipel"]
   }
