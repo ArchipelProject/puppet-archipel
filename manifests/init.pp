@@ -1,14 +1,5 @@
 class archipel( $include_pkg_repos = true ){
-  Exec {
-  path => [
-    '/usr/local/bin',
-    '/opt/local/bin',
-    '/usr/bin',
-    '/usr/sbin',
-    '/bin',
-    '/sbin'],
-  logoutput => true,
-  }
+
   #assume git package is named 'git'
   if ! defined(Package['git']) {
     package { 'git':
@@ -16,19 +7,23 @@ class archipel( $include_pkg_repos = true ){
     }
   }
   if $::operatingsystem == 'centos' {
+
     if $include_pkg_repos == true {
       include epel
     }
+
     package { ["python-setuptools","gcc","python-devel",
-               "python-argparse", "python-pip"]:
+               "python-pip"]:
     }
-    service { 'iptables':
+    ->
+    exec { "/usr/bin/pip install sqlalchemy":
+    unless => "/bin/ls /usr/lib/python2.7/site-packages/SQLAlchemy-*"
+    }
+
+    service { 'firewalld':
       ensure => 'stopped',
       enable => false,
     }
-    service { 'ip6tables':
-      ensure => 'stopped',
-      enable => false,
-    }
+
   }
 }

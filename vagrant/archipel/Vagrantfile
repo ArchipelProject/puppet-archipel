@@ -7,6 +7,7 @@ require 'ipaddr'
 require 'yaml'
 
 domain = 'archipel.priv'
+central_server_hostname = "central-server"
 network = IPAddr.new '192.168.122.0/24'
 range = network.to_range.to_a
 cidr = (32-(Math.log(range.length)/Math.log(2))).to_i
@@ -61,18 +62,16 @@ end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.box = "nrel/CentOS-6.5-x86_64"
+  config.vm.box = "vStone/centos-7.x-puppet.3.x"
 
   config.vm.provider "libvirt" do |lv, override|
-    override.vm.box = "centos-6"
-    config.vm.box_url = 'https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6/centos-6.box'
+    override.vm.box = "centos-7.1-libvirt-box"
+    config.vm.box_url = 'http://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-7.1/centos-7.1.box'
   end
 
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = "puppet/manifests"
   end
-
-  central_server_hostname = "central-server"
 
   #config.vm.synced_folder ".", "/vagrant", type: "nfs"
   if provision.is_a?(TrueClass) or (provision.is_a?(Array) and provision.include?(central_server_hostname))
@@ -141,7 +140,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 end
 
-puts "After provisionning you can launch archipel UI http://app.archipelproject.org using admin@#{domain}, password admin and set server url as http://#{range[2].to_s}:5280/http-bind"
-
-
-
+if provision
+  puts "After provisionning you can launch archipel UI  http://#{range[2].to_s}/Archipel/?user=admin%40#{central_server_hostname}.#{domain}&password=admin&service=ws://#{range[2].to_s}:5280/xmpp"
+end
