@@ -178,6 +178,11 @@ modules:
             - "flat"
             - "hometree"
             - "pep"
+    mod_ping:
+        send_pings: true
+        ping_interval: 60
+        ping_ack_timeout: 30
+        timeout_action: kill
     mod_register:
         access: register
     mod_roster: []
