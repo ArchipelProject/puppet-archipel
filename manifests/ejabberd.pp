@@ -1,7 +1,7 @@
 class ejabberd
 (
-  $ejabberd_release='16.02',
-  $ejabberd_rpm_url="https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/16.02/ejabberd-16.02-0.x86_64.rpm"
+  $ejabberd_release='16.03',
+  $ejabberd_rpm_url="https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/16.03/ejabberd-16.03-0.x86_64.rpm"
 )
 {
   package { 'ejabberd':
